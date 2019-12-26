@@ -1,0 +1,428 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    
+</head>
+<body>
+
+    <div class="container body-content">
+        @RenderBody()
+            <div class="row"  style="margin-top:20px;">
+                <div class="col-sm-6 col-sm-offset-3">
+                     <h2>User Information</h2>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary" data-toggle=modal data-target="#addUserModal">Create User</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 col-sm-offset-3">
+                    <table id="userTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTable-body"></tbody>
+                    </table>
+                </div>
+              </div>
+
+                <!--TASK MODAL-->
+                <div class="modal fade" id="modalTasks" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+
+                            <input style="visibility:hidden" id="hiddenUserName">
+                            <input style="visibility:hidden" id="hiddenUserId">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="exampleModalLongTitle"></h4>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <table id="taskTable" class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Description</th>
+                                            <th scope="col">State</th>
+                                            <th scope="col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="taskTable-body"></tbody>
+                                </table>
+
+                                <h4 style="text-decoration:underline">Create New Task</h4>
+                                <div class="form-group">
+                                    <label for="inputName">User</label>
+                                    <input class="form-control" id="inputAddTaskUserName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputName">State</label>
+                                    <input class="form-control" id="inputAddTaskState">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputName">Description</label>
+                                    <input class="form-control" id="inputAddTaskDescription">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" onclick="addNewTask();">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--ADD NEW USER MODAL-->
+                <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleAddModalLongTitle">Create New User</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label for="inputName">Name</label>
+                                    <input class="form-control" id="inputAddUserName" placeholder="Enter User Name">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" id="updateUserButton" onclick="addNewUser();" class="btn btn-primary">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--USER EDIT MODAL-->
+                <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLongTitle">Update User</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label for="inputName">Name</label>
+                                    <input style="visibility:hidden" id="hiddenId">
+                                    <input class="form-control" id="inputName">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" id="updateUserButton" onclick="updateUser();" class="btn btn-primary">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    <script>
+        $(document).ready(function () {
+            loadDataTable();
+           
+        });
+        
+        function loadDataTable() {
+            $("#userTable-body").empty();
+            $.ajax({
+                url:"api/User",
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                data: "{}",
+                dataType: "json",
+                success: function (response) {
+                    var tr;
+                    $.each(response, function (index, item) {
+                        tr = $('<tr/>');
+                        tr.append("<td>" + item.Name + "</td>");
+                        tr.append("<td>" + "<a id=view-tasks onclick=displayTasks(this); data-toggle=modal data-target=#modalTasks data-id=" + item.Id + " + data-name=" + "'" + item.Name + "'" + "> View Tasks </a>"
+                            + "|<a id=view-tasks onclick=displayEditModal(this); data-toggle=modal data-target=#editUserModal data-id=" + item.Id + " data-name=" + "'" + item.Name + "'" + "> Update </a>"
+                            + "|<a id=view-tasks onclick=deleteUser(this); data-toggle=modal data-target=#exampleModalCenter data-id=" + item.Id + " data-name=" + "'" + item.Name + "'" + "> Delete </a></td>");
+                        $('#userTable').append(tr);
+                    });
+                },
+                error: function (result) {
+                    alert("Error");
+                }
+            });
+        }
+       
+        function displayTasks(dataAttribute) {
+            $("#taskTable-body").empty();
+             var  userId = $(dataAttribute).attr("data-id");
+             var  userName = $(dataAttribute).attr("data-name");
+            $.ajax({
+                url: "/api/Task",
+                data: { id:userId },
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    var tr;
+                    if (response.length == 0) {
+                        tr = $('<tr/>');
+                        tr.append("<td></td>");
+                        tr.append("<td>No data to display</td>");
+                        tr.append("<td></td>");
+                        $('#taskTable').append(tr);
+                    } else {
+                        $.each(response, function (index, item) {
+                            tr = $('<tr/>');
+                            tr.append("<td> <input type=text id=state-" + item.Id + " value=" + "'" + item.State + "'" + "></input></td>");
+                            tr.append("<td> <input type=text id=description-" + item.Id + " value=" + "'" + item.Description + "'" + "></input></td>");
+                            tr.append("<td>" + "<a id=view-tasks onclick=updateTask(this); data-user-id=" + item.UserId + " data-state=" + "'" + item.State + "'" + " data-description=" + "'" + item.Description + "'" + " data-id=" + item.Id + " > Update </a > | "
+                                + "<a id=view-tasks onclick=deleteTask(this); data-user-id=" + item.UserId + " data-state=" + "'" + item.State + "'" + " data-description=" + "'" + item.Description + "'" + " data-id=" + item.Id + " >Delete </a>" + "</td>");
+                            $('#taskTable').append(tr);
+                        });
+                    }
+
+                },
+                error: function (result) {
+                    alert("Error");
+                }
+            });
+
+            $('#exampleModalLongTitle').text(
+                userName + '\'s Tasks'
+            );
+            $('#hiddenUserName').val(
+                userName
+            );
+            $('#hiddenUserId').val(
+                userId
+            );
+
+            $('#inputAddTaskUserName').val(
+                userName
+            );
+
+         
+        }
+
+        function displayTasksAfterUpdate(dataAttribute) {
+            $("#taskTable-body").empty();
+            var userId = $(dataAttribute).attr("data-user-id");
+            $.ajax({
+                url: "/api/Task",
+                data: { id: userId },
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    var tr;
+                    $.each(response, function (index, item) {
+                        tr = $('<tr/>');
+                        var checked = item.Selected ? " checked" : " "
+                        tr.append("<td> <input type=text id=state-" + item.Id + " value=" + "'" + item.State + "'" + "></input></td>");
+                        tr.append("<td> <input type=text id=description-" + item.Id + " value=" + "'" + item.Description + "'" + "></input></td>");
+                        tr.append("<td>" + "<a id=view-tasks onclick=updateTask(this); data-user-id=" + item.UserId + " data-state=" + "'" + item.State + "'" + " data-description=" + "'" + item.Description + "'" + " data-id=" + item.Id + " > Update </a > | "
+                            + "<a id=view-tasks onclick=deleteTask(this); data-user-id=" + item.UserId + " data-state=" + "'" + item.State + "'" + " data-description=" + "'" + item.Description + "'" + " data-id=" + item.Id + " >Delete </a>" + "</td>");
+                        $('#taskTable').append(tr);
+                      
+                    });
+                },
+                error: function (result) {
+                    alert("Error");
+                }
+            });  
+            $('#hiddenUserId').val(
+                userId
+            );
+        }
+
+        function displayTasksAfterInsert(userId) {
+            $("#taskTable-body").empty();
+            $.ajax({
+                url: "/api/Task",
+                data: { id: userId },
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    var tr;
+                    $.each(response, function (index, item) {
+                        tr = $('<tr/>');
+                        var checked = item.Selected ? " checked" : " "
+                        tr.append("<td> <input type=text id=state-" + item.Id + " value=" + "'" + item.State + "'" + "></input></td>");
+                        tr.append("<td> <input type=text id=description-" + item.Id + " value=" + "'" + item.Description + "'" + "></input></td>");
+                        tr.append("<td>" + "<a id=view-tasks onclick=updateTask(this); data-user-id=" + item.UserId + " data-state=" + "'" + item.State + "'" + " data-description=" + "'" + item.Description + "'" + " data-id=" + item.Id + " > Update </a > | "
+                            + "<a id=view-tasks onclick=deleteTask(this); data-user-id=" + item.UserId + " data-state=" + "'" + item.State + "'" + " data-description=" + "'" + item.Description + "'" + " data-id=" + item.Id + " >Delete </a>" + "</td>");
+                        $('#taskTable').append(tr);
+                    });
+                },
+                error: function (result) {
+                    alert("Error");
+                }
+            });
+
+            $('#hiddenUserId').val(
+                userId
+            );
+
+        }
+
+        function updateTask(dataAttribute) {
+            var taskId = $(dataAttribute).attr("data-id");
+            var state = $('#state-' + taskId).val();
+            var description = $('#description-' + taskId).val();
+            if (state.length < 1 || description.length < 1) {
+                alert("Please fill all fields");
+            }
+            else {
+                var Task = new Object();
+                Task.description = description;
+                Task.state = state;
+                Task.Id = parseInt(taskId);
+                $.ajax({
+                    url: "/api/Task",
+                    data: Task,
+                    type: "PUT",
+                    dataType: "json",
+                    success: function (response) {
+                        alert("Record has been updated successfully");
+                        displayTasksAfterUpdate(dataAttribute);
+                    },
+                    error: function (result) {
+                        alert("Error");
+                    }
+                });
+            }
+            
+        }
+
+        function displayEditModal(dataAttribute) {
+            var name = $(dataAttribute).attr("data-name");    
+            var userId = $(dataAttribute).attr("data-id");
+            $('#inputName').val(name);
+            $('#hiddenId').val(userId);
+        }
+
+        function updateUser() {
+            var name = $("#inputName").val();
+            var userId = parseInt($("#hiddenId").val());
+            var User = new Object();
+            User.name = name;
+            User.Id = userId;
+            $.ajax({
+                url: "/api/User",
+                data: User,
+                type: "PUT",
+                dataType: "json",
+                success: function (response) {
+                    alert("Record has been updated successfully");
+                    $('#editUserModal').modal('toggle');
+                    loadDataTable();
+                },
+                error: function (result) {
+                    alert("Error");
+                }
+            });
+
+        }
+
+        function addNewUser() {
+            var name = $("#inputAddUserName").val();
+            var User = new Object();
+            User.name = name;
+            $.ajax({
+                url: "/api/User",
+                data: User,
+                type: "POST",
+                dataType: "json",
+                success: function (response) {
+                    alert("New user has been saved successfully");
+                    $('#addUserModal').modal('toggle');
+                    $("#inputAddUserName").val("");
+                    loadDataTable();
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert(xhr.status);
+                    alert(thrownError);
+                }
+            });
+
+        }
+
+
+        function addNewTask() {      
+            var userId = parseInt($('#hiddenUserId').val());
+            var userName = $('#hiddenUserName').val();
+            var state = $('#inputAddTaskState').val();
+            var description = $('#inputAddTaskDescription').val();
+            
+            if (state.length < 1 || description.length < 1) {
+                alert("Please fill all fields");
+            }
+            else {
+                var Task = new Object();
+                Task.UserId = userId;
+                Task.State = state;
+                Task.Description = description;
+                $.ajax({
+                    url: "api/Task",
+                    data: Task,
+                    type: "POST",
+                    dataType: "json",
+                    success: function (response) {
+                        alert("New task has been saved successfully");
+                        displayTasksAfterInsert(userId);
+                        $('#inputAddTaskState').val("");
+                        $('#inputAddTaskDescription').val("");
+                    },
+                    error: function (result) {
+                        alert("Error");
+                    }
+                });
+            }
+
+        }
+
+        function deleteUser(dataAttribute) {
+            var answer = confirm('User and his/her tasks will be deleted. Are you sure?');
+            if (answer) {
+                var userId = $(dataAttribute).attr("data-id");
+                var idval = 1;
+                $.ajax({
+                    url: "/api/User?id=" + parseInt(userId),
+                    type: "DELETE",
+                    contentType: "application/json",
+                    success: function (response) {
+                        alert("Record has been deleted successfully");
+                       
+                        loadDataTable();
+                    },
+                    error: function (result) {
+                        alert("Error");
+                    }
+                });
+            }
+
+        }
+
+        function deleteTask(dataAttribute) {
+            var answer = confirm('Task will be deleted. Are you sure?');
+            if (answer) {
+                var taskId = $(dataAttribute).attr("data-id");
+                $.ajax({
+                    url: "/api/Task?id=" + parseInt(taskId),
+                    type: "DELETE",
+                    contentType: "application/json",
+                    success: function (response) {
+                        alert("Record has been deleted successfully");
+                        displayTasksAfterUpdate(dataAttribute);
+                    },
+                    error: function (result) {
+                        alert("Error");
+                    }
+                });
+            }
+
+        }
+    </script>
+
+</body>
+</html>
